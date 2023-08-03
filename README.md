@@ -3,7 +3,7 @@
 -----
 This is a shell script to find the intersected GWAS SNPs within the input BED file. There are two modes for this script. The default is to read the 
 
- * [Bed2GWASCatalog.sh](https://github.com/zhaoshuoxp/Enrichment-Analysis#Bed2GWASCatalogsh):This script will intersect the input BED file in hg38 with GWAS catalog SNPs and calculate the enrichment for the overlaps.
+ * Bed2GWASCatalog.sh: This script will intersect the input BED file in hg38 with GWAS catalog SNPs and calculate the enrichment for the overlaps.
  * GwasCatalog.bed: Source file of all GWAS associtations, SNP coordinates and 1bp plus, TAB delimited. Converted from [GWAS](https://www.ebi.ac.uk/gwas/), version [1.0.2](https://www.ebi.ac.uk/gwas/api/search/downloads/alternative) 
  * group.tsv: Grouped diseases and keywords to search in default mode, TAB delimited.
  * AllDiseases.txt: All diseases in GWAS catalog.
