@@ -138,10 +138,10 @@ main(){
 		data[order(data[,6]),]->data
 		data\$rank<-nrow(data):1
 
-		png(file='output.png',height = 8, width = 8, res=600, units = "in", family="Arial")
-		ggplot(data, aes(x=Odds, y=rank,label=Disease)) + 
+		png(file='output.png',height = 7, width = 8, res=600, units = "in", family="Arial")
+		ggplot(data, aes(x=Odds, y=-log10(Pval),label=Disease)) + 
 			geom_point(shape=19, alpha=0.5, aes(size=Overlaps,color=Disease)) + 
-			xlab("Odds Ratio") + ylab("P-value Rank") + 
+			xlab("Odds Ratio") + ylab("-logPval") + 
 			ggtitle ("GWAS SNPs enrichment - binomial test") + 
 			scale_size(range = c(5, 20))+
 			theme(axis.text=element_text(size=18), 
