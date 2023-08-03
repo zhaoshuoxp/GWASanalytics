@@ -3,9 +3,10 @@
 -----
 This is a shell script to find the intersected GWAS SNPs within the input BED file. There are two modes for this script. The default is to read the 
 
- * [gwasLD.sh](https://github.com/zhaoshuoxp/Enrichment-Analysis#gwasLDsh): Analyze GWAS lead SNPs High LD enrichment with given SNPs list .
- * [Genes_overlap_Fisher.sh](https://github.com/zhaoshuoxp/Enrichment-Analysis#genes_overlap_fishersh): *Fisher* test for two groups of genes overlapping.
- * [Peaks_overlap_Fisher.sh](https://github.com/zhaoshuoxp/Enrichment-Analysis#peaks_overlap_fishersh): *Fisher* test for two groups of peaks overlapping.
+ * [Bed2GWASCatalog.sh](https://github.com/zhaoshuoxp/Enrichment-Analysis#Bed2GWASCatalogsh):This script will intersect the input BED file in hg38 with GWAS catalog SNPs and calculate the enrichment for the overlaps.
+ * GwasCatalog.bed: Source file of all GWAS associtations, SNP coordinates and 1bp plus, TAB delimited. Converted from [GWAS](https://www.ebi.ac.uk/gwas/), version [1.0.2](https://www.ebi.ac.uk/gwas/api/search/downloads/alternative) 
+ * group.tsv: Grouped diseases and keywords to search in default mode, TAB delimited.
+ * AllDiseases.txt: All diseases in GWAS catalog.
 
 > Requirements:
 awk, sed, bedtools, R, R packages: ggplot2,ggrepel,ggsci
@@ -14,58 +15,61 @@ awk, sed, bedtools, R, R packages: ggplot2,ggrepel,ggsci
 
 ----
 
-## gwasLD.sh
-
-This script requires [LDDirection](https://github.com/MikeDacre/LDDirection) for LD calculation. 
-
 #### Input
 
-SNPs, a rsID per line.
+BED file, chr, pos1, pos2, TAB delimited.
 
 #### Usage
 
-Modify line4 for the GWAS catalog with rsID file. Line5 for population, line6 for maximum distance of the two SNP pair, and line 7 for R-square cutoff (0.2 minimal).
+help message can be shown by `Bed2GWASCatalog.sh -h`
 
+```shell
+./Bed2GWASCatalog.sh
+Usage: Bed2GWASCatalog.sh <options> <input.bed>
+
+### INPUT: BED file ###
+This script will intersect the input BED file in hg38 with GWAS catalog SNPs and calculate the enrichment for the overlaps.
+### bedtools required for running, R pacakges ggplot2/ggrepel/ggsci requried for plotiing ###
+
+Options:
+-a Running intersection with all the diseases in the catalog rather than grouped diseases only by default
+-n [int] Diseases included for at lease N SNPs in the GWAS file, 50 as default. Only work with -a is ON
+-g [str] Custom GWAS file, three columns: chr,pos,disease, TAB delimited. Will use default GwasCatalog.bed under the script path if not designated.
+-p [str] Custom grouped disease file, two columns: keywords,diseases, TAB delimited. Only work with -a is OFF
+-h Print this help message
 ```
-./gwasLD.sh SNP.txt
+
+For default mode, edit `group.tsv` or provde a new one to the script by `-g`:
+
+```shell
+./Bed2GWASCatalog.sh TCF21_peaks_hg38.bed
+#Custum group.tsv
+./Bed2GWASCatalog.sh -p group.tsv TCF21_peaks_hg38.bed
 ```
 
-#### Output
+For default mode, add `-a`:
 
-- SNP_bar.png
+```shell
+./Bed2GWASCatalog.sh -a TCF21_peaks_hg38.bed
+```
 
+Custon GWAS file is also supported:
 
-
------
-## Genes_overlap_Fisher.sh 
-GWAS genes will be used as background.
-#### Usage
-
-    ./Genes_overlap_Fisher.sh genelist1.txt genelist2.txt
-
-#### Output
-
-*P* value will be printed.
+```shell
+./Bed2GWASCatalog.sh -g your_gwas.bed TCF21_peaks_hg38.bed
+```
 
 
-
-------
-##Peaks_overlap_Fisher.sh
-
-#### Usage
-
-    ./Genes_overlap_Fisher.sh region1.bed region2.bed background.bed
-
-> [ENCODE common open chromation](https://github.com/milospjanic/fisherTestForGenomicOverlapsMilosPjanicMod/blob/master/background.bed.gz) regions are usually used as background.
 
 #### Output
 
-*P* value will be printed.
+- data.tsv: The text output of the enrichment analysis, one disease per line, TAB delimited.
+- output.png: data.tsv ploting with ggplot2, only be generated in default mode.
 
 
 
 ------
 
 Author [@zhaoshuoxp](https://github.com/zhaoshuoxp)  
-Mar 27 2019  
+Aug 2 2023  
 

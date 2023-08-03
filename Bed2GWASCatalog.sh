@@ -10,17 +10,17 @@ group=${SHELL_FOLDER}/group.tsv
 # help message
 help(){
 	cat <<-EOF
-	Usage: BED2GwasCatalog.sh <options> <input.bed>
+	Usage: Bed2GWASCatalog.sh <options> <input.bed>
 
 	### INPUT: BED file ###
-	This script will intersect the input BED file in hg38 with GWAS catalog SNPs and calculate the enrichment for the overlaps. With all diseases mode, script only plots top 30 diseases while all result will be stored in data.tsv.
+	This script will intersect the input BED file in hg38 with GWAS catalog SNPs and calculate the enrichment for the overlaps.
 	### bedtools required for running, R pacakges ggplot2/ggrepel/ggsci requried for plotiing ###
 
 	Options:
 	-a Running intersection with all the diseases in the catalog rather than grouped diseases only by default
 	-n [int] Diseases included for at lease N SNPs in the GWAS file, 50 as default. Only work with -a is ON
-	-g [str] Custom GWAS file, three columns: chr,pos,disease, TAB seperated. If not designated, will use default GwasCatalog.bed under the script path 
-	-p [str] Custom grouped disease file, two columns: keywords,diseases, TAB seperated. Only work with -a is OFF
+	-g [str] Custom GWAS file, three columns: chr,pos,disease, TAB delimited. Will use default GwasCatalog.bed under the script path if not designated.
+	-p [str] Custom grouped disease file, two columns: keywords,diseases, TAB delimited. Only work with -a is OFF
 	-h Print this help message
 EOF
 	exit 0
