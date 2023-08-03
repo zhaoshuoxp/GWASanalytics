@@ -43,7 +43,7 @@ For default mode, edit `group.tsv` or provde a new one to the script by `-g`:
 
 ```shell
 ./Bed2GWASCatalog.sh TCF21_peaks_hg38.bed
-#Custum group.tsv
+#Custom group.tsv
 ./Bed2GWASCatalog.sh -p group.tsv TCF21_peaks_hg38.bed
 ```
 
@@ -53,7 +53,7 @@ For default mode, add `-a`:
 ./Bed2GWASCatalog.sh -a TCF21_peaks_hg38.bed
 ```
 
-Custon GWAS file is also supported:
+Custom GWAS file is also supported:
 
 ```shell
 ./Bed2GWASCatalog.sh -g your_gwas.bed TCF21_peaks_hg38.bed
