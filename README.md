@@ -64,7 +64,7 @@ Custom GWAS file is also supported:
 #### Output
 
 - data.tsv: The text output of the enrichment analysis, one disease per line, TAB delimited.
-- output.png: data.tsv ploting with ggplot2, only be generated in default mode.
+- output.png: data.tsv ploting with ggplot2, only generated in default mode.
 
 ![output.png](https://raw.githubusercontent.com/zhaoshuoxp/GWASanalytics/main/output.png)
 
