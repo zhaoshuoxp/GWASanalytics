@@ -2,12 +2,13 @@
 
 #Default settings
 SHELL_FOLDER=$(dirname "$0")
+# clean the GWAS file, replace all special characters to "_", including \/()[]<>+|%$&,;:'" and space. Otherwise will disrupt grep command
 gwas=${SHELL_FOLDER}/GwasCatalog.bed
 mod="group"
+# CardiogramplusC4D is 52, so 50 as default to make sure including it
 num=50
 group=${SHELL_FOLDER}/group.tsv
 
-# help message
 help(){
 	cat <<-EOF
 	Usage: Bed2GWASCatalog.sh <options> <input.bed>
@@ -26,31 +27,31 @@ EOF
 	exit 0
 }
 
-
-#run all catalog enrichment analysis
-
 all_catalog(){
-	disease=$(cut -f4 $gwas |sort |uniq -c|sort -k1,1nr|awk '$1>="'"$num"'"' |awk '{print $2}')
+	# when comparing int/double in awk command, use -v to assign external vars to internal vars, otherwise the numbers will be treated as empty string
+	disease=$(cut -f4 $gwas |sort |uniq -c|sort -k1,1nr|awk -v val=$num '$1+0>=val' |awk '{print $2}')
 	echo "Grepping diseases"
 	for i in ${disease[@]};do
+		# didn't replace - to _, grep treats "-" as a range symbol, so have to add "\" before it
 		grep -w -i "$(echo $i|sed 's/-/\\-/g')" $gwas |awk -v OFS="\t" '{print $1,$2,$2+1}' > ${i}.gwascatalog.bed &
 	done
 	wait 
 	echo "Grepping Done"
 	echo "Intersecting overlaps"
 	for i in *.gwascatalog.bed;do
+		# make sure to use sort -u because extened peaks make have duplicated hits
 		intersectBed -a $i -b $1 |sort -u  > ${1}_${i/.gwascatalog.bed/}.overlap &
 	done
 	wait
 	echo "Intersecting done"
 }
 
-
 group_catalog(){
 	echo "Grepping diseases"
 	while read line; do
 		keyword=$(echo $line |awk '{print $1}')
 		disease=$(echo $line |awk '{print $2}')
+		# make sure to remove ${disease}.gwascatalog.bed after running because of >>
 		grep "$keyword" $gwas |awk -v OFS="\t" '{print $1,$2,$2+1}' >> ${disease}.gwascatalog.bed 
 	done < $group
 	wait
@@ -67,19 +68,19 @@ group_catalog(){
 }
 
 enrich(){
+	#Fraction for dbinom test
 	curl -S https://hgdownload.cse.ucsc.edu/goldenpath/hg38/bigZips/hg38.chrom.sizes > chromsize
 	hg38=$(cat chromsize | awk '{ sum+=($2)} END {print sum}')
-	#bedtools merge on input bed
+	#bedtools merge  input bed to get coverage, just in case
 	sort -k1,1V -k2,2n $1 > tmp
 	bedtools merge -i tmp -c 1 -o count > input
 	rm tmp
-	#calculate coverage
 	cov=$(cat input | awk '{ sum+=($3-$2)} END {print sum}')
 	echo "Coverage of BED file: $cov"
 	fra=$(cat input | awk '{ sum+=($3-$2)} END {print sum/"'"$hg38"'"}')
 	echo "Input fraction of hg38: $fra"
 	
-	# enrich analysis
+	# enrich analysis, make sure use sort -u to remove duplicates
 	echo -e "Disease\tOverlaps\tCatalogNumber\tFraction\tOdds">data.tsv
 	total=$(cat *.gwascatalog.bed|sort -u |wc -l |awk '{print $1}')
 	hits_total=$(cat *.overlap|sort -u |wc -l |awk '{print $1}')
@@ -91,7 +92,6 @@ enrich(){
 			echo -e "${i/.gwascatalog.bed/}\t$hits\t$cat_total\t$fra\t$fold" >> data.tsv
 		fi
 	done
-	
 }
 
 
@@ -104,7 +104,7 @@ fi
 while getopts "hag:n:p:" arg
 do
 	case $arg in
-		# only include grouped catalog
+		# only include grouped catalog if no -a
 		a) mod="all";;
 		# Custom GWAS file
 		g) gwas=$OPTARG;;
@@ -120,10 +120,10 @@ done
 
 shift $(($OPTIND - 1))
 
-
 main(){
 	if [ $mod != 'all' ];then 
 		echo "Running on grouped catalog by default"
+		# don't forget $1 to run
 		group_catalog $1
 		enrich $1
 		
@@ -134,7 +134,7 @@ main(){
 		library("ggsci")
 
 		data <- read.table('data.tsv', header=T)
-		data\$Pval<-dbinom(data\$Overlaps,data\$CatalogNumber,data\$Fraction,log=F)*data\$CatalogNumber
+		data\$Pval<-dbinom(data\$Overlaps,data\$CatalogNumber,data\$Fraction,log=F)*data\$CatalogNumber # correct Pval by multiply N number
 		data[order(data[,6]),]->data
 		data\$rank<-nrow(data):1
 
@@ -161,7 +161,7 @@ main(){
 		all_catalog $1
 		enrich $1
 	fi
-	
+
 	rm *.gwascatalog.bed ${1}_*.overlap input chromsize
 }
 
@@ -174,3 +174,8 @@ if [ $? -ne 0 ]; then
 else
 	echo "Run succeed"
 fi
+
+################ END ################
+#          Created by Aone          #
+#        quanyiz@stanford.edu       #
+################ END ################
