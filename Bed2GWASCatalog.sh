@@ -154,8 +154,8 @@ main(){
 		write.table(data,'data.tsv',sep='\t',quote=F,row.names=F, col.names=T)
 	
 		EOF
-			chmod 755 plot.r 
-			./plot.r
+		chmod 755 plot.r 
+		./plot.r
 	else
 		echo "Running on all diseases"
 		all_catalog $1
