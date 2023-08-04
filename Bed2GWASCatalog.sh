@@ -37,6 +37,7 @@ all_catalog(){
 	done
 	wait 
 	echo "Grepping Done"
+	
 	echo "Intersecting overlaps"
 	for i in *.gwascatalog.bed;do
 		# make sure to use sort -u because extened peaks make have duplicated hits
@@ -54,16 +55,15 @@ group_catalog(){
 		# make sure to remove ${disease}.gwascatalog.bed after running because of >>
 		grep "$keyword" $gwas |awk -v OFS="\t" '{print $1,$2,$2+1}' >> ${disease}.gwascatalog.bed 
 	done < $group
-	wait
 	for i in $(cut -f2 $group|sort -u);do
 		sort -u ${i}.gwascatalog.bed > 1 && mv 1 ${i}.gwascatalog.bed
 	done
 	echo "Grepping Done"
+	
 	echo "Intersecting overlaps"
 	for i in *.gwascatalog.bed;do
 		intersectBed -a $i -b $1 |sort -u  > ${1}_${i/.gwascatalog.bed/}.overlap &
 	done
-	wait
 	echo "Intersecting done"
 }
 
