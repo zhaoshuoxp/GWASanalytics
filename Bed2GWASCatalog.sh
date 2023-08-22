@@ -39,8 +39,6 @@ all_catalog(){
 	echo "Grepping Done"
 	
 	echo "Intersecting overlaps"
-	# take basename of $1 to keep output, otherwise errors when using input with path 
-	$input=$(basename $1)
 	for i in *.gwascatalog.bed;do
 		# make sure to use sort -u because extened peaks make have duplicated hits
 		intersectBed -a $i -b $1 |sort -u  > ${input}_${i/.gwascatalog.bed/}.overlap &
@@ -63,7 +61,6 @@ group_catalog(){
 	echo "Grepping Done"
 	
 	echo "Intersecting overlaps"
-	$input=$(basename $1)
 	for i in *.gwascatalog.bed;do
 		intersectBed -a $i -b $1 |sort -u  > ${input}_${i/.gwascatalog.bed/}.overlap &
 	done
@@ -127,6 +124,8 @@ main(){
 	if [ $mod != 'all' ];then 
 		echo "Running on grouped catalog by default"
 		# don't forget $1 to run
+		# take basename of $1 to keep output, otherwise errors when using input with path 
+		$input=$(basename $1)
 		group_catalog $1
 		enrich $1
 		
@@ -164,7 +163,6 @@ main(){
 		all_catalog $1
 		enrich $1
 	fi
-	$input=$(basename $1)
 	rm *.gwascatalog.bed ${input}_*.overlap input chromsize
 }
 
