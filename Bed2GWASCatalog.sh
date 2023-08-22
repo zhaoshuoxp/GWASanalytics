@@ -85,7 +85,7 @@ enrich(){
 	total=$(cat *.gwascatalog.bed|sort -u |wc -l |awk '{print $1}')
 	hits_total=$(cat *.overlap|sort -u |wc -l |awk '{print $1}')
 	for i in *.gwascatalog.bed;do
-		hits=$(cat ${1}_${i/.gwascatalog.bed/}.overlap|sort -u|wc -l|awk '{print $1}')
+		hits=$(cat ${pre}_${i/.gwascatalog.bed/}.overlap|sort -u|wc -l|awk '{print $1}')
 		if [ $hits -gt 0 ];then
 			cat_total=$(wc -l $i|awk '{print $1}')
 			fold="$(awk 'BEGIN {print (("'"$hits"'"/"'"$hits_total"'")/("'"$cat_total"'"/"'"$total"'"))}')"
