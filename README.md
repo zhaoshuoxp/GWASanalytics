@@ -1,10 +1,11 @@
-# BED-GWAS Catalog analytics
+# GWAS Catalog analytics
 
 -----
-This is a shell script to find the intersected GWAS SNPs within the input BED file. There are two modes for this script. The default is to read the 
+This is a shell script to find the intersected GWAS SNPs or genes within the input BED file or gene list. There are two modes for this script. The default is to read the designated group.tsv to search the keywords of diseases to obtain the SNPs or genes. While -a mode is to traversal all diseases in AllDiseases.txt. 
 
- * Bed2GWASCatalog.sh: This script will intersect the input BED file in hg38 with GWAS catalog SNPs and calculate the enrichment for the overlaps.
- * GwasCatalog.bed: Source file of all GWAS associtations, SNP coordinates and 1bp plus, TAB delimited. Converted from [GWAS](https://www.ebi.ac.uk/gwas/), version [1.0.2](https://www.ebi.ac.uk/gwas/api/search/downloads/alternative) 
+ * Bed2GWASCatalog.sh|GeneGWASCatalog.sh: These scripts will intersect the input BED file in hg38 or the gene list with GWAS catalog SNPs or genes, and calculate the enrichment using *binomial test* for the overlaps.
+
+ * GwasCatalog.bed|GwasCatalog.genes : Source file of all GWAS associtations, SNP coordinates and 1bp plus, or gene offical names, TAB delimited. Converted from [GWAS](https://www.ebi.ac.uk/gwas/), version [1.0.2](https://www.ebi.ac.uk/gwas/api/search/downloads/alternative) 
  * group.tsv: Grouped diseases and keywords to search in default mode, TAB delimited.
  * AllDiseases.txt: All diseases in GWAS catalog.
 
@@ -17,7 +18,7 @@ awk, sed, bedtools, R, R packages: ggplot2,ggrepel,ggsci
 
 #### Input
 
-BED file, chr, pos1, pos2, TAB delimited.
+BED file, chr, pos1, pos2, TAB delimited, or gene list in TEXT file, one per row.
 
 #### Usage
 
@@ -59,6 +60,8 @@ Custom GWAS file is also supported:
 ./Bed2GWASCatalog.sh -g your_gwas.bed TCF21_peaks_hg38.bed
 ```
 
+> Usage of GeneGWASCatalog.sh is identical to Bed2GWASCatalog.sh
+
 
 
 #### Output
@@ -71,5 +74,5 @@ Custom GWAS file is also supported:
 ------
 
 Author [@zhaoshuoxp](https://github.com/zhaoshuoxp)  
-Aug 2 2023  
+Nov 3 2023  
 
