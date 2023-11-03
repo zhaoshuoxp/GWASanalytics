@@ -62,7 +62,7 @@ group_catalog(){
 	
 	echo "Intersecting overlaps"
 	for i in *.gwascatalog.bed;do
-		intersectBed -a $i -b $1 |sort -u  > ${pre}_${i/.gwascatalog.bed/}.overlap &
+		intersectBed -a $i -b $1 |sort -u  > ${pre}_${i/.gwascatalog.gene/}.overlap &
 	done
 	echo "Intersecting done"
 }
@@ -136,12 +136,13 @@ main(){
 		library("ggsci")
 
 		data <- read.table('data.tsv', header=T)
-		data\$Pval<-dbinom(data\$Overlaps,data\$CatalogNumber,data\$Fraction,log=F)*data\$CatalogNumber # correct Pval by multiply N number
+		data\$Pval<-dbinom(data\$Overlaps,data\$CatalogNumber,data\$Fraction,log=F)
+		data\$Padj<-p.adjust(data$Pval)
 		data[order(data[,6]),]->data
 		data\$rank<-nrow(data):1
 
 		png(file='output.png',height = 7, width = 8, res=600, units = "in", family="Arial")
-		ggplot(data, aes(x=Odds, y=-log10(Pval),label=Disease)) + 
+		ggplot(data, aes(x=Odds, y=-log10(Padj),label=Disease)) + 
 			geom_point(shape=19, alpha=0.5, aes(size=Overlaps,color=Disease)) + 
 			xlab("Odds Ratio") + ylab("-logPval") + 
 			ggtitle ("GWAS SNPs enrichment - binomial test") + 
