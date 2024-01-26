@@ -40,7 +40,7 @@ all_catalog(){
 	
 	echo "Intersecting overlaps"
 	for i in *.gwascatalog.gene;do
-		cat $i $1|sort |uniq -d  > ${pre}_${i/.gwascatalog.bed/}.overlap &
+		cat $i $1|sort |uniq -d  > ${pre}_${i/.gwascatalog.gene/}.overlap &
 	done
 	wait
 	echo "Intersecting done"
@@ -61,7 +61,7 @@ group_catalog(){
 	
 	echo "Intersecting overlaps"
 	for i in *.gwascatalog.gene;do
-		cat $i $1 |sort|uniq -d  > ${pre}_${i/.gwascatalog.bed/}.overlap &
+		cat $i $1 |sort|uniq -d  > ${pre}_${i/.gwascatalog.gene/}.overlap &
 	done
 	echo "Intersecting done"
 }
@@ -149,6 +149,7 @@ main(){
 		./plot.r
 	else
 		echo "Running on all diseases"
+		pre=$(basename $1)
 		all_catalog $1
 		enrich $1
 	fi
