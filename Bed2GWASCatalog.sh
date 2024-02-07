@@ -161,6 +161,7 @@ main(){
 		./plot.r
 	else
 		echo "Running on all diseases"
+		pre=$(basename $1)
 		all_catalog $1
 		enrich $1
 	fi
