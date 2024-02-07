@@ -20,7 +20,7 @@ help(){
 	Options:
 	-a Running intersection with all the diseases in the catalog rather than grouped diseases only by default
 	-n [int] Diseases included for at lease N Genes in the GWAS file, 50 as default. Only work with -a is ON
-	-g [str] Custom GWAS file, three columns: chr,pos,disease, TAB delimited. Will use default GwasCatalog.bed under the script path if not designated.
+	-g [str] Custom GWAS file, three columns: chr,pos,disease, TAB delimited. Will use default GwasCatalog.gene under the script path if not designated.
 	-p [str] Custom grouped disease file, two columns: keywords,diseases, TAB delimited. Only work with -a is OFF
 	-h Print this help message
 EOF
@@ -51,7 +51,7 @@ group_catalog(){
 	while read line; do
 		keyword=$(echo $line |awk '{print $1}')
 		disease=$(echo $line |awk '{print $2}')
-		# make sure to remove ${disease}.gwascatalog.bed after running because of >>
+		# make sure to remove ${disease}.gwascatalog.gen after running because of >>
 		grep "$keyword" $gwas |awk -v OFS="\t" '{print $1}' >> ${disease}.gwascatalog.gene 
 	done < $group
 	for i in $(cut -f2 $group|sort -u);do
