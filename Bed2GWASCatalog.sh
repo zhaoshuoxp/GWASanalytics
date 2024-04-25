@@ -62,7 +62,7 @@ group_catalog(){
 	
 	echo "Intersecting overlaps"
 	for i in *.gwascatalog.bed;do
-		intersectBed -a $i -b $1 |sort -u  > ${pre}_${i/.gwascatalog.gene/}.overlap &
+		intersectBed -a $i -b $1 |sort -u  > ${pre}_${i/.gwascatalog.bed/}.overlap &
 	done
 	echo "Intersecting done"
 }
@@ -137,7 +137,7 @@ main(){
 
 		data <- read.table('data.tsv', header=T)
 		data\$Pval<-dbinom(data\$Overlaps,data\$CatalogNumber,data\$Fraction,log=F)
-		data\$Padj<-p.adjust(data$Pval)
+		data\$Padj<-p.adjust(data\$Pval)
 		data[order(data[,6]),]->data
 		data\$rank<-nrow(data):1
 
