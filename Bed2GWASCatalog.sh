@@ -126,7 +126,6 @@ main(){
 	if [ $mod != 'all' ];then 
 		echo "Running on grouped catalog by default"
 		# don't forget $1 to run
-		# take basename of $1 to keep output, otherwise errors when using input with path 
 		group_catalog $1
 		enrich $1
 		
@@ -160,6 +159,7 @@ main(){
 		EOF
 		chmod 755 plot.r 
 		./plot.r
+		mv output.png ${pre}.png
 	else
 		echo "Running on all diseases"
 		all_catalog $1
@@ -167,7 +167,6 @@ main(){
 	fi
 	rm *.gwascatalog.bed ${pre}_*.overlap input chromsize
 	mv data.tsv ${pre}.tsv
-	mv output.png ${pre}.png
 }
 
 main $1
