@@ -48,7 +48,7 @@ For default mode, edit `group.tsv` or provde a new one to the script by `-g`:
 ./Bed2GWASCatalog.sh -p group.tsv TCF21_peaks_hg38.bed
 ```
 
-For searching all diseases mode, add `-a`:
+For searching all diseases, use `-a`:
 
 ```shell
 ./Bed2GWASCatalog.sh -a TCF21_peaks_hg38.bed
