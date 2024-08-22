@@ -18,7 +18,7 @@ awk, sed, bedtools, R, R packages: ggplot2,ggrepel,ggsci
 
 #### Input
 
-BED file, chr, pos1, pos2, TAB delimited, or gene list in TEXT file, one per row.
+BED file, chr, pos1, pos2, TAB delimited, or gene list in TEXT file, one per row for Gene2GWASCatalog.sh
 
 #### Usage
 
@@ -48,7 +48,7 @@ For default mode, edit `group.tsv` or provde a new one to the script by `-g`:
 ./Bed2GWASCatalog.sh -p group.tsv TCF21_peaks_hg38.bed
 ```
 
-For default mode, add `-a`:
+For searching all diseases mode, add `-a`:
 
 ```shell
 ./Bed2GWASCatalog.sh -a TCF21_peaks_hg38.bed
