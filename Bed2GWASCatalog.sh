@@ -83,14 +83,12 @@ enrich(){
 	echo "Input fraction of hg38: $fra"
 	
 	echo -e "Disease\tOverlaps\tCatalogNumber\tFraction\tFoldEnrichment" > data.tsv
-	total=$(cat *.gwascatalog.bed | sort -u | wc -l | awk '{print $1}')
-	hits_total=$(cat *.overlap | sort -u | wc -l | awk '{print $1}')
 	
 	for i in *.gwascatalog.bed; do
 		hits=$(cat "${pre}_${i/.gwascatalog.bed/}.overlap" | sort -u | wc -l | awk '{print $1}')
 		if [ "$hits" -gt 0 ]; then
 			cat_total=$(wc -l < "$i" | awk '{print $1}')
-			fold=$(awk -v h="$hits" -v ht="$hits_total" -v c="$cat_total" -v t="$total" 'BEGIN {print ((h/ht)/(c/t))}')
+			fold=$(awk -v h="$hits" -v c="$cat_total" -v f="$fra" 'BEGIN {print (h / (c * f))}')
 			echo -e "${i/.gwascatalog.bed/}\t$hits\t$cat_total\t$fra\t$fold" >> data.tsv
 		fi
 	done
@@ -131,32 +129,34 @@ main(){
 		library("ggsci")
 
 		data <- read.table('data.tsv', header=TRUE)
-		# Calculate cumulative probability P(X >= k) for enrichment
+		
 		data\$Pval <- pbinom(data\$Overlaps - 1, data\$CatalogNumber, data\$Fraction, lower.tail=FALSE)
 		data\$Padj <- p.adjust(data\$Pval, method = "BH")
-		data <- data[order(data[,6]), ]
+		
+		data <- data[order(data\$Pval, decreasing=TRUE), ]
 		data\$rank <- nrow(data):1
 
 		# Render plot with transparent background
-		png(file='output.png', height = 7, width = 8, res=600, units = "in", family="Arial", bg="transparent")
+		png(file='output.png', height = 7, width = 8, res=600, units = "in", family="sans", bg="transparent")
 		
 		ggplot(data, aes(x=FoldEnrichment, y=-log10(Padj), label=Disease)) + 
-			geom_point(shape=19, alpha=0.5, aes(size=Overlaps, color=Disease)) + 
-			xlab("Fold Enrichment") + ylab("-log10(Padj)") + 
-			ggtitle("GWAS SNPs Enrichment - Binomial Test") + 
+			geom_point(shape=19, alpha=0.6, aes(size=Overlaps, color=Disease)) + 
+			xlab("Fold Enrichment (Observed / Expected)") + ylab("-log10(Padj)") + 
+			ggtitle("GWAS SNPs Enrichment (Binomial Test)") + 
 			scale_size(range = c(5, 20)) +
 			scale_color_npg() +
-			theme_classic() +
+			theme_classic(base_size = 14) +
 			theme(
-				axis.text = element_text(size=18), 
-				axis.title = element_text(size=18),
+				axis.text = element_text(size=14), 
+				axis.title = element_text(size=16, face="bold"),
+				plot.title = element_text(size=16, face="bold", hjust=0.5),
 				panel.background = element_rect(fill = "transparent", colour = NA),
 				plot.background = element_rect(fill = "transparent", colour = NA),
 				panel.border = element_blank(),
 				legend.background = element_rect(fill = "transparent", colour = NA)
 			) +
 			guides(color = guide_legend(override.aes = list(size = 5))) +
-			geom_text_repel(aes(label=Disease, color = Disease), size=6, show.legend=FALSE)
+			geom_text_repel(aes(label=Disease, color = Disease), size=5, show.legend=FALSE, box.padding = 0.5)
 			
 		invisible(dev.off())
 
