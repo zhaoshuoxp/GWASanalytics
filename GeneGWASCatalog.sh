@@ -61,24 +61,24 @@ group_catalog(){
 	for i in *.gwascatalog.gene; do
 		comm -12 <(sort -u "$i") <(sort -u "$1") > "${pre}_${i/.gwascatalog.gene/}.overlap" &
 	done
-	wait # Added missing wait to ensure background intersections finish
+	wait
 	echo "Intersecting done."
 }
 
 enrich(){
 	# Assuming 61256 is the total number of annotated human genes (e.g., Gencode)
-	fra=$(sort -u "$1" | wc -l | awk '{print $1/61256}')
-	echo -e "Disease\tOverlaps\tCatalogNumber\tFraction\tFoldEnrichment" > data.tsv
+	bg_size=61256
+	input_size=$(sort -u "$1" | wc -l | awk '{print $1}')
 	
-	total=$(cat *.gwascatalog.gene | sort -u | wc -l | awk '{print $1}')
-	hits_total=$(cat *.overlap | sort -u | wc -l | awk '{print $1}')
+	echo -e "Disease\tOverlaps\tCatalogNumber\tInputSize\tBgSize\tFoldEnrichment" > data.tsv
 	
 	for i in *.gwascatalog.gene; do
 		hits=$(cat "${pre}_${i/.gwascatalog.gene/}.overlap" | sort -u | wc -l | awk '{print $1}')
 		if [ "$hits" -gt 0 ]; then
 			cat_total=$(wc -l < "$i" | awk '{print $1}')
-			fold=$(awk -v h="$hits" -v ht="$hits_total" -v c="$cat_total" -v t="$total" 'BEGIN {print ((h/ht)/(c/t))}')
-			echo -e "${i/.gwascatalog.gene/}\t$hits\t$cat_total\t$fra\t$fold" >> data.tsv
+			# Fold Enrichment = Observed / Expected = hits / ((cat_total / bg_size) * input_size)
+			fold=$(awk -v h="$hits" -v c="$cat_total" -v i_size="$input_size" -v bg="$bg_size" 'BEGIN {print (h / ((c / bg) * i_size))}')
+			echo -e "${i/.gwascatalog.gene/}\t$hits\t$cat_total\t$input_size\t$bg_size\t$fold" >> data.tsv
 		fi
 	done
 }
@@ -103,7 +103,7 @@ done
 shift $((OPTIND - 1))
 
 main(){
-	file=$(basename "$1") # FIXED: properly defined the file variable
+	file=$(basename "$1")
 	pre=${file%.*}
 	
 	if [ "$mod" != 'all' ]; then 
@@ -118,32 +118,39 @@ main(){
 		library("ggsci")
 
 		data <- read.table('data.tsv', header=TRUE)
-		# Cumulative right-tail binomial probability
-		data\$Pval <- pbinom(data\$Overlaps - 1, data\$CatalogNumber, data\$Fraction, lower.tail=FALSE)
+
+		# phyper(q, m, n, k, lower.tail = FALSE)
+		data\$Pval <- phyper(data\$Overlaps - 1, 
+		                     data\$CatalogNumber, 
+		                     data\$BgSize - data\$CatalogNumber, 
+		                     data\$InputSize, 
+		                     lower.tail = FALSE)
+		                     
 		data\$Padj <- p.adjust(data\$Pval, method = "BH")
-		data <- data[order(data[,6]), ]
+		data <- data[order(data\$Pval, decreasing=FALSE), ]
 		data\$rank <- nrow(data):1
 
 		# Render plot with transparent background
-		png(file='output.png', height = 7, width = 8, res=600, units = "in", family="Arial", bg="transparent")
+		png(file='output.png', height = 7, width = 8, res=600, units = "in", family="sans", bg="transparent")
 		
 		ggplot(data, aes(x=FoldEnrichment, y=-log10(Padj), label=Disease)) + 
-			geom_point(shape=19, alpha=0.5, aes(size=Overlaps, color=Disease)) + 
-			xlab("Fold Enrichment") + ylab("-log10(Padj)") + 
-			ggtitle("GWAS Gene Enrichment - Binomial Test") + 
+			geom_point(shape=19, alpha=0.6, aes(size=Overlaps, color=Disease)) + 
+			xlab("Fold Enrichment (Observed / Expected)") + ylab("-log10(Padj)") + 
+			ggtitle("GWAS Gene Enrichment (Hypergeometric Test)") + 
 			scale_size(range = c(5, 20)) +
 			scale_color_npg() +
-			theme_classic() +
+			theme_classic(base_size=14) +
 			theme(
-				axis.text = element_text(size=18), 
-				axis.title = element_text(size=18),
+				axis.text = element_text(size=14), 
+				axis.title = element_text(size=16, face="bold"),
+				plot.title = element_text(size=16, face="bold", hjust=0.5),
 				panel.background = element_rect(fill = "transparent", colour = NA),
 				plot.background = element_rect(fill = "transparent", colour = NA),
 				panel.border = element_blank(),
 				legend.background = element_rect(fill = "transparent", colour = NA)
 			) +
 			guides(color = guide_legend(override.aes = list(size = 5))) +
-			geom_text_repel(aes(label=Disease, color = Disease), size=6, show.legend=FALSE)
+			geom_text_repel(aes(label=Disease, color = Disease), size=5, show.legend=FALSE, box.padding=0.5)
 			
 		invisible(dev.off())
 
